@@ -10,7 +10,12 @@ import{
 } from 'react-native';
 
 import Icon from 'react-native-vector-icons/FontAwesome'
-import {} from '../c'
+// import {} from '../c'  第一次提交
+
+
+
+
+
 export default class commonCell extends Component {
 
     // static propTypes = {
