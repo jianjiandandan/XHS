@@ -25,10 +25,6 @@ import FollowView from './FollowView';
 import BuyView from './BuyView'
 
 
-// const {width, height} = Dimensions.get('window')
-
-
-let data11 = ['1|2', '2|3']
 export default class HomeView extends Component {
     // 构造
     constructor(props) {
@@ -78,32 +74,24 @@ export default class HomeView extends Component {
                 <View style={styles.searchViewStyle}>
                     <TextInput
                         placeholder={'🔍搜索笔记，商品和用户'}
-                        style={styles.textInputStyle}
-                    />
+                        style={styles.textInputStyle}/>
                 </View>
 
                 {this.justToView()}
 
-
                 <View style={styles.BottomViewStyle}>
-                    <View
-                        style={styles.viewStyle}>
-                        <View
-                            style={styles.circularViewStyle}>
-                            <Icon name={messageImage} size={30}/>
-                        </View>
-
-                        <View style={styles.circularlineViewStyle}/>
-
-                        <View
-                            style={styles.circularViewStyle}>
-                            <Icon name={cartImage} size={30}/>
-                        </View>
-
-                        <View style={styles.circularlineViewStyle}/>
+                    <View style={styles.viewStyle}>
+                        {[messageImage, cartImage].map((item, index) => {
+                            return (
+                                <View key={index}>
+                                    <View style={styles.circularViewStyle}>
+                                        <Icon name={item} size={30}/>
+                                    </View>
+                                    <View style={styles.circularlineViewStyle}/>
+                                </View>
+                            )
+                        })}
                     </View>
-
-
                 </View>
             </View>
         );
@@ -153,27 +141,24 @@ export default class HomeView extends Component {
                     <Text style={styles.textStyle}>简简单单</Text>
                     <Text style={styles.rightRowStyle}> > </Text>
                 </View>
-
-                {['我的关注|eye', '我的收藏|star-o', '消息|comment-o'].map((item, index) => {
-                    let varb = item.split("|")
-                    return (
-                        <CommonCell key={index} leftImage={`${varb[1]}`} title={`${varb[0]}`}/>
-                    )
-                })}
-
+                {this.listRow(['我的关注|eye', '我的收藏|star-o', '消息|comment-o'])}
                 <View style={styles.lineViewStyle}/>
-
-                {['购物车|cart-plus', '订单|sticky-note', '薯券|credit-card', '心愿单|tags', '黑卡会员|diamond'].map((item, index) => {
-                    let varb11 = item.split("|")
-                    return (
-                        <CommonCell key={index} leftImage={`${varb11[1]}`} title={`${varb11[0]}`}/>
-                    )
-                })}
-
+                {this.listRow(['购物车|cart-plus', '订单|sticky-note', '薯券|credit-card', '心愿单|tags', '黑卡会员|diamond'])}
                 <View style={styles.lineViewStyle}/>
-                <CommonCell leftImage={'gear'} title={'设置'}/>
+                {this.listRow(['设置|gear'])}
             </View>
         )
+    }
+
+    listRow(rowData) {
+        let listRowArr = [];
+        rowData.map((item, index) => {
+            let varb11 = item.split("|")
+            listRowArr.push(
+                <CommonCell key={index} leftImage={`${varb11[1]}`} title={`${varb11[0]}`}/>
+            )
+        });
+        return listRowArr;
     }
 
 
@@ -267,8 +252,8 @@ const styles = StyleSheet.create({
         height: 10,
         borderRadius: 5,
         position: 'absolute',
-        left: 70,
-        bottom: 68
+        left: 39,
+        bottom: 38
     },
 
     circularViewStyle: {
