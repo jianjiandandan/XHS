@@ -14,66 +14,79 @@ import {
     TouchableHighlight,
     DeviceEventEmitter,
     Alert,
-    StatusBar
+    StatusBar,
+    Animated
 } from 'react-native';
 
-// import openShare from 'react-native-open-share';
-import * as QQAPI from 'react-native-qq';
 import TabBarScreen from './app/container/TabBarScreen'
 import {observable} from 'mobx'
-import {observer} from 'mobx-react'
-import Store from './app/mobx/StatusBar'
-
-const instructions = Platform.select({
-    ios: 'Press Cmd+R to reload,\n' +
-    'Cmd+D or shake for dev menu',
-    android: 'Double tap R on your keyboard to reload,\n' +
-    'Shake or press menu button for dev menu',
-});
-
-// const DrawerNav = DrawerNavigator({
-//     HomeView:{screen:HomeView},
-//     RadioView:{screen:RadioView}
-// }, {
-//     drawerWidth: 200,//抽屉宽
-//     drawerPosition: 'left',//抽屉在左边还是在右边
-//     contentOptions: {
-//         initialRouteName:HomeView,//默认页面组件
-//         activeTintColor: 'white',//选中文字的颜色
-//         activeBackgroundColor: '#ff8500',//选中背景颜色
-//         inactiveTintColor: '#666',//未选中文字的颜色
-//         inactiveBackgroundColor: '#fff',//未选中的背景颜色
-//         style: {
-//             //样式
-//         }
-//     }
-// });
-//
-// export default DrawerNav
+import {observer, Provider} from 'mobx-react/native'
+import Store from './app/mobx/StatusBarStore'
+import NetInfoDecorator from './app/component/NetInfoDecorator'
+import connectionStore from './app/mobx/ConnectionStore'
+import store from './app'
 
 
-// const Navigator = NavigationActions({
-//
-// })
-
+@NetInfoDecorator
 @observer
 export default class App extends Component<{}> {
+    // 构造
+    constructor(props) {
+        super(props);
+        // 初始状态
+        this.state = {
+            promptPosition: new Animated.Value(0)
+        };
+    }
+
+    componentWillReceiveProps(nextProps) {
+        // const {isConnected} = nextProps;
+        if (!connectionStore.isConnected) {//网络连接失败
+            Animated.timing(
+                this.state.promptPosition,
+                {
+                    toValue: 1,
+                    duration: 200
+                }).start(() => {
+                setTimeout(() => {
+                    Animated.timing(
+                        this.state.promptPosition, {
+                            toValue: 0,
+                            duration: 200
+                        }
+                    ).start();
+                }, 2000)
+            })
+        }
+    }
 
     render() {
-        console.log('Store.isHiddenStatusBar',Store.isHiddenStatusBar)
+
+        let positionY = this.state.promptPosition.interpolate({
+            inputRange: [0, 1],
+            outputRange: [-30, 20]
+        })
         return (
-          <View style={{flex:1}}>
-              <StatusBar
-                  backgroundColor='black'
-                  barStyle={'light-content'}
-                  translucent={false}
-                  animated={false}
-                  hidden={Store.isHiddenStatusBar}
-                  networkActivityIndicatorVisible={false}
-                  showHideTransition={'slide'}
-              />
-              <TabBarScreen/>
-          </View>
+            <View style={{flex:1}}>
+                <StatusBar
+                    backgroundColor='black'
+                    barStyle={'light-content'}
+                    translucent={false}
+                    animated={false}
+                    hidden={Store.isHiddenStatusBar}
+                    networkActivityIndicatorVisible={false}
+                    showHideTransition={'slide'}
+                />
+                <Provider>
+                    <TabBarScreen/>
+                </Provider>
+
+                <Animated.View style={[styles.netInfoView, {top:positionY}]}>
+                    <Text style={styles.netInfoPrompt}>
+                        网络异常，请检查网络稍后重试~
+                    </Text>
+                </Animated.View>
+            </View>
             // <View style={styles.container}>
             //     <Text>第三方登录奥</Text>
             //     <View style={{marginTop:20,flexDirection:'row'}}>
@@ -98,95 +111,95 @@ export default class App extends Component<{}> {
         );
     }
 
-    aa(option) {
-        switch (option) {
-            case 1:
-                this.Login(1);
-                break;
-            case 2:
-                this.Login(2);
-                break;
-            case 3:
-                break
-        }
-    }
+    // aa(option) {
+    //     switch (option) {
+    //         case 1:
+    //             this.Login(1);
+    //             break;
+    //         case 2:
+    //             this.Login(2);
+    //             break;
+    //         case 3:
+    //             break
+    //     }
+    // }
+    //
+    // Login(option) {
+    //     if (option == 1) {
+    //         QQAPI.login()
+    //             .then(data => {
+    //                 console.log('data', data)
+    //             })
+    //             .catch((err) => {
+    //                 console.log('err', err)
+    //             })
+    //         // QQAPI.isQQSupportApi()
+    //         // QQAPI.isQQInstalled()
+    //         //     .then((isInstalled) => {
+    //         //         if (isInstalled) {
+    //         //
+    //         //         } else {
+    //         //             Alert.alert('暂未安装qq')
+    //         //         }
+    //         //     })
+    //
+    //
+    //     } else if (option == 2) {
+    //         let shareQQ = {
+    //             type: 'news',
+    //             title: "分享标题",
+    //             description: '描述',
+    //         }
+    //
+    //         QQAPI.shareToQQ(shareQQ)
+    //             .then(data => {
+    //                 console.log('data', data)
+    //             })
+    //             .catch((err) => {
+    //                 console.log('err', err)
+    //             })
+    //         // QQAPI.isQQInstalled()
+    //         //     .then((isInstalled) => {
+    //         //         if (isInstalled) {
+    //         //             QQAPI.shareToQQ({
+    //         //                 type: 'news',
+    //         //                 title: "分享标题",
+    //         //                 description: '描述',
+    //         //             })
+    //         //                 .catch((err) => {
+    //         //                     Alert.alert('err', err)
+    //         //                 })
+    //         //         }
+    //         //     })
+    //         //     .catch((err)=>{
+    //         //         Alert.alert('没装qq')
+    //         //     })
+    //         // QQAPI.shareToQQ({
+    //         //     type: 'news',
+    //         //     title: "分享标题",
+    //         //     description: '描述',
+    //         // })
+    //         //     .then((data)=>{
+    //         //         console.log('data11',data)
+    //         //     })
+    //         //     .catch((err)=>{
+    //         //     Alert.alert('还没安装qq啊')
+    //         //     })
+    //     }
 
-    Login(option) {
-        if (option == 1) {
-            QQAPI.login()
-                .then(data => {
-                    console.log('data', data)
-                })
-                .catch((err) => {
-                    console.log('err', err)
-                })
-            // QQAPI.isQQSupportApi()
-            // QQAPI.isQQInstalled()
-            //     .then((isInstalled) => {
-            //         if (isInstalled) {
-            //
-            //         } else {
-            //             Alert.alert('暂未安装qq')
-            //         }
-            //     })
 
-
-        } else if (option == 2) {
-            let shareQQ = {
-                type: 'news',
-                title: "分享标题",
-                description: '描述',
-            }
-
-            QQAPI.shareToQQ(shareQQ)
-                .then(data => {
-                    console.log('data', data)
-                })
-                .catch((err) => {
-                    console.log('err', err)
-                })
-            // QQAPI.isQQInstalled()
-            //     .then((isInstalled) => {
-            //         if (isInstalled) {
-            //             QQAPI.shareToQQ({
-            //                 type: 'news',
-            //                 title: "分享标题",
-            //                 description: '描述',
-            //             })
-            //                 .catch((err) => {
-            //                     Alert.alert('err', err)
-            //                 })
-            //         }
-            //     })
-            //     .catch((err)=>{
-            //         Alert.alert('没装qq')
-            //     })
-            // QQAPI.shareToQQ({
-            //     type: 'news',
-            //     title: "分享标题",
-            //     description: '描述',
-            // })
-            //     .then((data)=>{
-            //         console.log('data11',data)
-            //     })
-            //     .catch((err)=>{
-            //     Alert.alert('还没安装qq啊')
-            //     })
-        }
-
-
-        //   openShare.qqLogin()
-        // if(!this.qqLogin){
-        //     this.qqLogin = DeviceEventEmitter.addListener(
-        //         'managerCallback',(response) =>{
-        //             Alert.alert('response',JSON.stringify(response))
-        //         }
-        //     );
-        //
-        //     this.qqLogin.remove();
-        //     delete this.qqLogin;
-        // }
-    }
+    //   openShare.qqLogin()
+    // if(!this.qqLogin){
+    //     this.qqLogin = DeviceEventEmitter.addListener(
+    //         'managerCallback',(response) =>{
+    //             Alert.alert('response',JSON.stringify(response))
+    //         }
+    //     );
+    //
+    //     this.qqLogin.remove();
+    //     delete this.qqLogin;
+    // }
+    // }
 }
 
 const styles = StyleSheet.create({
@@ -206,4 +219,19 @@ const styles = StyleSheet.create({
         color: '#333333',
         marginBottom: 5,
     },
+
+    netInfoView: {
+        justifyContent: 'center',
+        alignItems: 'center',
+        height: 30,
+        position: 'absolute',
+        right: 0,
+        left: 0,
+        backgroundColor: 'red'
+    },
+    netInfoPrompt: {
+        color: 'white',
+        fontWeight: 'bold'
+    }
+
 });
